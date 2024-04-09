@@ -19,11 +19,11 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('MGM APP'),
+        title: const Text('MGM APP'),
         centerTitle: true,
-        backgroundColor: Color.fromARGB(255, 235, 235, 211),
+        backgroundColor: const Color.fromARGB(255, 235, 235, 211),
       ),
-      backgroundColor: Color.fromARGB(255, 60, 60, 59),
+      backgroundColor: const Color.fromARGB(255, 60, 60, 59),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
                       if (response.statusCode == 200) {
                         print('Water pump turned on');
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Water pump started')),
+                          const SnackBar(content: Text('Water pump started')),
                         );
                       } else {
                         print('Failed to turn on the water pump');
@@ -64,7 +64,7 @@ class HomePage extends StatelessWidget {
                       if (response.statusCode == 200) {
                         print('Water pump turned off');
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Water pump stopped')),
+                          const SnackBar(content: Text('Water pump stopped')),
                         );
                       } else {
                         print('Failed to turn off the water pump');
@@ -75,12 +75,12 @@ class HomePage extends StatelessWidget {
                   print(e);
                 }
               },
-              icon: Icon(Icons.water_drop,
+              icon: const Icon(Icons.water_drop,
                   color: Color.fromARGB(255, 60, 60, 59)),
-              label: Text('Water Pump'),
+              label: const Text('Water Pump'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 235, 235, 211),
-                foregroundColor: Color.fromARGB(255, 60, 60, 59),
+                backgroundColor: const Color.fromARGB(255, 235, 235, 211),
+                foregroundColor: const Color.fromARGB(255, 60, 60, 59),
               ),
             ),
             ElevatedButton.icon(
@@ -93,13 +93,14 @@ class HomePage extends StatelessWidget {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          backgroundColor: Color.fromARGB(255, 235, 235, 211),
-                          title: Text('Soil Humidity'),
+                          backgroundColor:
+                              const Color.fromARGB(255, 235, 235, 211),
+                          title: const Text('Soil Humidity'),
                           content: Text('Humidity Level: $soilData'),
                           actions: [
                             Theme(
                               data: ThemeData(
-                                textTheme: TextTheme(
+                                textTheme: const TextTheme(
                                     button: TextStyle(
                                         color:
                                             Color.fromARGB(255, 60, 60, 59))),
@@ -120,24 +121,160 @@ class HomePage extends StatelessWidget {
                   print(e);
                 }
               },
-              icon: Icon(Icons.thermostat,
+              icon: const Icon(Icons.thermostat,
                   color: Color.fromARGB(255, 60, 60, 59)),
-              label: Text('Temperature'),
+              label: const Text('Soil Humidity'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 235, 235, 211),
-                foregroundColor: Color.fromARGB(255, 60, 60, 59),
+                backgroundColor: const Color.fromARGB(255, 235, 235, 211),
+                foregroundColor: const Color.fromARGB(255, 60, 60, 59),
               ),
             ),
             ElevatedButton.icon(
-              onPressed: () {
-                // Add functionality for Button 1
+              onPressed: () async {
+                try {
+                  final data = await fetchData(context);
+                  if (data.containsKey('light')) {
+                    var pumpStatus = data['light'];
+                    var updatedData = json.decode(json.encode(data));
+                    if (pumpStatus == 'off') {
+                      updatedData['light'] = 'on';
+                      // Send a request to turn on the water pump
+                      var response = await http.post(
+                        Uri.parse(
+                            'https://mgm-hns-firebase-server.onrender.com/post'),
+                        body: json.encode(updatedData),
+                        headers: {'Content-Type': 'application/json'},
+                      );
+                      if (response.statusCode == 200) {
+                        print('Lights are ON');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Lights turned ON')),
+                        );
+                      } else {
+                        print('Failed to turn on the lights');
+                      }
+                    } else if (pumpStatus == 'on') {
+                      updatedData['light'] = 'off';
+                      // Send a request to turn off the lights
+                      var response = await http.post(
+                        Uri.parse(
+                            'https://mgm-hns-firebase-server.onrender.com/post'),
+                        body: json.encode(updatedData),
+                        headers: {'Content-Type': 'application/json'},
+                      );
+                      if (response.statusCode == 200) {
+                        print('Lights are off');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Lights are turned OFF')),
+                        );
+                      } else {
+                        print('Failed to turn off the lights');
+                      }
+                    }
+                  }
+                } catch (e) {
+                  print(e);
+                }
               },
-              icon:
-                  Icon(Icons.lightbulb, color: Color.fromARGB(255, 60, 60, 59)),
-              label: Text('Light Control'),
+              icon: const Icon(Icons.lightbulb,
+                  color: Color.fromARGB(255, 60, 60, 59)),
+              label: const Text('Light Control'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 235, 235, 211),
-                foregroundColor: Color.fromARGB(255, 60, 60, 59),
+                backgroundColor: const Color.fromARGB(255, 235, 235, 211),
+                foregroundColor: const Color.fromARGB(255, 60, 60, 59),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                try {
+                  final data = await fetchData(context);
+                  if (data.containsKey('light_intesity')) {
+                    var lightData = data['light_intesity'];
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          backgroundColor:
+                              const Color.fromARGB(255, 235, 235, 211),
+                          title: const Text('Light Intensity'),
+                          content: Text('Light Intensity: $lightData'),
+                          actions: [
+                            Theme(
+                              data: ThemeData(
+                                textTheme: const TextTheme(
+                                  button: TextStyle(
+                                      color: Color.fromARGB(255, 60, 60, 59)),
+                                ),
+                              ),
+                              child: TextButton(
+                                child: Text('Close'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  }
+                } catch (e) {
+                  print(e);
+                }
+              },
+              icon: const Icon(Icons.light_mode,
+                  color: Color.fromARGB(255, 60, 60, 59)),
+              label: const Text('Light Sensor'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 235, 235, 211),
+                foregroundColor: const Color.fromARGB(255, 60, 60, 59),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                try {
+                  final data = await fetchData(context);
+                  if (data.containsKey('humidity')) {
+                    var humidityData = data['humidity'];
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          backgroundColor:
+                              const Color.fromARGB(255, 235, 235, 211),
+                          title: const Text('Air Humidity'),
+                          content: Text('Air Humidity: $humidityData'),
+                          actions: [
+                            Theme(
+                              data: ThemeData(
+                                textTheme: const TextTheme(
+                                  button: TextStyle(
+                                      color: Color.fromARGB(255, 60, 60, 59)),
+                                ),
+                              ),
+                              child: TextButton(
+                                child: Text('Close'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  }
+                } catch (e) {
+                  print(e);
+                }
+              },
+              icon: const Icon(Icons.water_damage_rounded,
+                  color: Color.fromARGB(255, 60, 60, 59)),
+              label: const Text('Humidity'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 235, 235, 211),
+                foregroundColor: const Color.fromARGB(255, 60, 60, 59),
               ),
             ),
           ],
